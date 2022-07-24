@@ -7,16 +7,13 @@ use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
 use predicates::str::contains;
-use serial_test::serial;
 
-#[serial]
 #[test]
 fn list_public_items() {
     let cmd = Command::cargo_bin("cargo-public-api").unwrap();
     assert_presence_of_own_library_items(cmd);
 }
 
-#[serial]
 #[test]
 fn list_public_items_with_lint_error() {
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
@@ -30,7 +27,6 @@ fn list_public_items_with_lint_error() {
         .success();
 }
 
-#[serial]
 #[test]
 fn custom_toolchain() {
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
@@ -38,7 +34,6 @@ fn custom_toolchain() {
     assert_presence_of_own_library_items(cmd);
 }
 
-#[serial]
 #[test]
 fn list_public_items_explicit_manifest_path() {
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
@@ -47,7 +42,6 @@ fn list_public_items_explicit_manifest_path() {
     assert_presence_of_own_library_items(cmd);
 }
 
-#[serial]
 #[test]
 fn virtual_manifest_error() {
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
@@ -63,13 +57,10 @@ fn virtual_manifest_error() {
 
 // We must serially run tests that touch the test crate git repo to prevent
 // ".git/index.lock: File exists"-errors.
-#[serial]
 #[test]
 fn diff_public_items() {
-    ensure_test_crate_is_cloned();
-
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.current_dir(test_crate_path());
+    cmd.current_dir(test_crate_path(file!(), line!()));
     cmd.arg("--color=never");
     cmd.arg("--diff-git-checkouts");
     cmd.arg("v0.0.4");
@@ -81,11 +72,8 @@ fn diff_public_items() {
         .success();
 }
 
-#[serial]
 #[test]
 fn deny_when_not_diffing() {
-    ensure_test_crate_is_cloned(); // Because we still list the API
-
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
     cmd.arg("--deny=all");
     cmd.assert()
@@ -93,13 +81,10 @@ fn deny_when_not_diffing() {
         .failure();
 }
 
-#[serial]
 #[test]
 fn deny_without_diff() {
-    ensure_test_crate_is_cloned();
-
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.current_dir(test_crate_path());
+    cmd.current_dir(test_crate_path(file!(), line!()));
     cmd.arg("--diff-git-checkouts");
     cmd.arg("v0.2.0");
     cmd.arg("v0.3.0");
@@ -107,13 +92,10 @@ fn deny_without_diff() {
     cmd.assert().success();
 }
 
-#[serial]
 #[test]
 fn deny_with_diff() {
-    ensure_test_crate_is_cloned();
-
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.current_dir(test_crate_path());
+    cmd.current_dir(test_crate_path(file!(), line!()));
     cmd.arg("--diff-git-checkouts");
     cmd.arg("v0.0.4");
     cmd.arg("v0.0.5");
@@ -123,13 +105,10 @@ fn deny_with_diff() {
         .failure();
 }
 
-#[serial]
 #[test]
 fn deny_with_invalid_arg() {
-    ensure_test_crate_is_cloned();
-
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.current_dir(test_crate_path());
+    cmd.current_dir(test_crate_path(file!(), line!()));
     cmd.arg("--diff-git-checkouts");
     cmd.arg("v0.0.4");
     cmd.arg("v0.0.5");
@@ -139,16 +118,13 @@ fn deny_with_invalid_arg() {
         .failure();
 }
 
-#[serial]
 #[test]
 fn diff_public_items_with_manifest_path() {
-    ensure_test_crate_is_cloned();
-
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
     cmd.arg("--manifest-path");
     cmd.arg(format!(
         "{}/Cargo.toml",
-        &test_crate_path().to_string_lossy()
+        &test_crate_path(file!(), line!()).to_string_lossy()
     ));
     cmd.arg("--color=never");
     cmd.arg("--diff-git-checkouts");
@@ -177,13 +153,10 @@ fn diff_public_items_without_git_root() {
         .failure();
 }
 
-#[serial]
 #[test]
 fn diff_public_items_with_color() {
-    ensure_test_crate_is_cloned();
-
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.current_dir(test_crate_path());
+    cmd.current_dir(test_crate_path(file!(), line!()));
     cmd.arg("--color=always");
     cmd.arg("--diff-git-checkouts");
     cmd.arg("v0.6.0");
@@ -195,7 +168,6 @@ fn diff_public_items_with_color() {
         .success();
 }
 
-#[serial]
 #[test]
 fn list_public_items_with_color() {
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
@@ -207,13 +179,10 @@ fn list_public_items_with_color() {
         .success();
 }
 
-#[serial]
 #[test]
 fn diff_public_items_markdown() {
-    ensure_test_crate_is_cloned();
-
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.current_dir(test_crate_path());
+    cmd.current_dir(test_crate_path(file!(), line!()));
     cmd.arg("--output-format=markdown");
     cmd.arg("--diff-git-checkouts");
     cmd.arg("v0.6.0");
@@ -242,13 +211,10 @@ fn diff_public_items_markdown() {
         .success();
 }
 
-#[serial]
 #[test]
 fn diff_public_items_markdown_no_changes() {
-    ensure_test_crate_is_cloned();
-
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.current_dir(test_crate_path());
+    cmd.current_dir(test_crate_path(file!(), line!()));
     cmd.arg("--output-format=markdown");
     cmd.arg("--diff-git-checkouts");
     cmd.arg("v0.2.0");
@@ -258,7 +224,6 @@ fn diff_public_items_markdown_no_changes() {
         .success();
 }
 
-#[serial]
 #[test]
 fn diff_public_items_from_files() {
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
@@ -289,11 +254,10 @@ Added items to the public API
         .success();
 }
 
-#[serial]
 #[test]
 fn diff_public_items_missing_one_arg() {
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.current_dir(test_crate_path());
+    cmd.current_dir(test_crate_path(file!(), line!()));
     cmd.arg("--diff-git-checkouts");
     cmd.arg("v0.2.0");
     cmd.assert()
@@ -303,7 +267,6 @@ fn diff_public_items_missing_one_arg() {
         .failure();
 }
 
-#[serial]
 #[test]
 fn list_public_items_markdown() {
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
@@ -319,7 +282,6 @@ fn list_public_items_markdown() {
         .success();
 }
 
-#[serial]
 #[test]
 fn verbose() {
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
@@ -359,13 +321,12 @@ fn assert_presence_of_args_in_help(mut cmd: Command) {
         .success();
 }
 
-fn ensure_test_crate_is_cloned() {
-    let path = test_crate_path();
+fn ensure_test_crate_is_cloned(path: &Path) {
     if path.exists() {
         print!("INFO: using ");
     } else {
         print!("INFO: cloning into ");
-        clone_test_crate(&path);
+        clone_test_crate(path);
     }
     // Print info about repo when running like this: cargo test -- --nocapture
     println!("'{}'", &path.to_string_lossy());
@@ -383,7 +344,7 @@ fn current_dir_and<P: AsRef<Path>>(path: P) -> PathBuf {
 fn clone_test_crate(dest: &Path) {
     let mut git = std::process::Command::new("git");
     git.arg("clone");
-    git.arg("https://github.com/Enselic/public-api.git"); // Tests still use this old git and the old name `public_items`
+    git.arg("/tmp/foo.bundle"); // Tests still use this old git and the old name `public_items`
     git.arg("-b");
     git.arg("v0.7.1");
     git.arg("--single-branch");
@@ -392,17 +353,21 @@ fn clone_test_crate(dest: &Path) {
 }
 
 /// Path to the git cloned test crate we use to test the diffing functionality
-fn test_crate_path() -> PathBuf {
+fn test_crate_path(file: &str, line: u32) -> PathBuf {
     let mut path = get_cache_dir();
-    path.push("cargo-public-api-test-repo");
+    path.push(format!(
+        "cargo-public-api-test-repo_{}_line-{}",
+        Path::new(file).file_name().unwrap().to_string_lossy(),
+        line
+    ));
+
+    ensure_test_crate_is_cloned(&path);
+
     path
 }
 
 /// Where to put things that survives across test runs. For example a git cloned
 /// test crate. We don't want to clone it every time we run tests.
 fn get_cache_dir() -> PathBuf {
-    // See https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates
-    option_env!("CARGO_TARGET_TMPDIR")
-        .map(PathBuf::from)
-        .unwrap_or_else(std::env::temp_dir)
+    std::env::temp_dir()
 }

@@ -67,6 +67,9 @@ fn cargo_rustdoc_command(
     command.args(["-Z", "unstable-options"]);
     command.args(["--output-format", "json"]);
     command.args(["--cap-lints", "warn"]);
+
+    eprintln!("Running {:?}", command);
+
     command
 }
 
