@@ -49,7 +49,7 @@ fn cargo_rustdoc_command(
     command.env_remove("RUSTDOC");
     command.env_remove("RUSTC");
 
-    command.arg(OVERRIDDEN_TOOLCHAIN.map_or_else(|| toolchain.as_ref(), OsStr::new));
+    //command.arg(OVERRIDDEN_TOOLCHAIN.map_or_else(|| toolchain.as_ref(), OsStr::new));
     command.arg("rustdoc");
     command.arg("--lib");
     if quiet {
